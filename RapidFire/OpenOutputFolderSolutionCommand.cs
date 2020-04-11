@@ -1,10 +1,8 @@
 ﻿using System;
 using System.ComponentModel.Design;
-using System.Globalization;
-using System.Threading;
-using System.Threading.Tasks;
+using EnvDTE;
+using EnvDTE80;
 using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
 using Task = System.Threading.Tasks.Task;
 
 namespace RapidFire
@@ -12,7 +10,7 @@ namespace RapidFire
     /// <summary>
     /// Command handler
     /// </summary>
-    internal sealed class OpenOutputPathCommand
+    internal sealed class OpenOutputFolderSolutionCommand
     {
         /// <summary>
         /// Command ID.
@@ -30,15 +28,21 @@ namespace RapidFire
         private readonly AsyncPackage package;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="OpenOutputPathCommand"/> class.
+        /// The DTE service.
+        /// </summary>
+        private readonly DTE2 dteService;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="OpenOutputFolderSolutionCommand"/> class.
         /// Adds our command handlers for menu (commands must exist in the command table file)
         /// </summary>
         /// <param name="package">Owner package, not null.</param>
         /// <param name="commandService">Command service to add command to, not null.</param>
-        private OpenOutputPathCommand(AsyncPackage package, OleMenuCommandService commandService)
+        private OpenOutputFolderSolutionCommand(AsyncPackage package, OleMenuCommandService commandService, DTE2 dteService)
         {
             this.package = package ?? throw new ArgumentNullException(nameof(package));
             commandService = commandService ?? throw new ArgumentNullException(nameof(commandService));
+            this.dteService = dteService ?? throw new ArgumentNullException(nameof(dteService));
 
             var menuCommandID = new CommandID(CommandSet, CommandId);
             var menuItem = new MenuCommand(this.Execute, menuCommandID);
@@ -48,7 +52,7 @@ namespace RapidFire
         /// <summary>
         /// Gets the instance of the command.
         /// </summary>
-        public static OpenOutputPathCommand Instance
+        public static OpenOutputFolderSolutionCommand Instance
         {
             get;
             private set;
@@ -75,8 +79,10 @@ namespace RapidFire
             // the UI thread.
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(package.DisposalToken);
 
-            OleMenuCommandService commandService = await package.GetServiceAsync(typeof(IMenuCommandService)) as OleMenuCommandService;
-            Instance = new OpenOutputPathCommand(package, commandService);
+            var commandService = await package.GetServiceAsync(typeof(IMenuCommandService)) as OleMenuCommandService;
+            var dteService = await package.GetServiceAsync(typeof(DTE)) as DTE2;
+
+            Instance = new OpenOutputFolderSolutionCommand(package, commandService, dteService);
         }
 
         /// <summary>
@@ -89,17 +95,20 @@ namespace RapidFire
         private void Execute(object sender, EventArgs e)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            string message = string.Format(CultureInfo.CurrentCulture, "Inside {0}.MenuItemCallback()", this.GetType().FullName);
-            string title = "OpenOutputPathCommand";
+            if (this.dteService?.SelectedItems.Count != 1)
+            {
+                return;
+            }
 
-            // Show a message box to prove we were here
-            VsShellUtilities.ShowMessageBox(
-                this.package,
-                message,
-                title,
-                OLEMSGICON.OLEMSGICON_INFO,
-                OLEMSGBUTTON.OLEMSGBUTTON_OK,
-                OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
+            var selectedItem = this.dteService.SelectedItems.Item(1);
+            if (selectedItem.Project != null)
+            {
+                OpenOutputFolderHelper.OpenProjectOutputFolder(selectedItem.Project);
+            }
+            else if (selectedItem.ProjectItem != null)
+            {
+                OpenOutputFolderHelper.OpenProjectOutputFolder(selectedItem.ProjectItem.ContainingProject);
+            }
         }
     }
 }

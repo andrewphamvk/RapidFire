@@ -45,7 +45,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="OpenOutputPathCommand.cs" />
+    <Compile Include="Helpers\OpenOutputFolderHelper.cs" />
+    <Compile Include="OpenOutputFolderActiveCommand.cs" />
+    <Compile Include="OpenOutputFolderSolutionCommand.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RapidFirePackage.cs" />
   </ItemGroup>
@@ -73,7 +75,19 @@
     </VSCTCompile>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Resources\OpenOutputPathCommand.png" />
+    <Content Include="LICENSE.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="Resources\OpenFolder_16x.png" />
+    <Content Include="Resources\RapidFire_Icon.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="Resources\RapidFire_Preview.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="'$(VSToolsPath)' != ''" />
