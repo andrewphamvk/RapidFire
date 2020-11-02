@@ -80,4 +80,12 @@
       <IDSymbol name="IDM_VS_MENU_EXTENSIONS" value="0x0091" />
     </GuidSymbol>
   </Symbols>
+
+  <KeyBindings>
+    <KeyBinding guid="guidRapidFirePackageCmdSet" id="OpenOutputFolderSolutionCommandId" 
+                editor="guidVSStd97" 
+                key1="VK_F2" mod1="Shift">
+    </KeyBinding>
+
+  </KeyBindings>
 </CommandTable>
